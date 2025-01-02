@@ -1,9 +1,15 @@
-// insertListData.js
-const { promisePool } = require('./lib/db');
+import { pool } from '../app/lib/db.mjs';
 
 async function insertListData(listData) {
+  let connection;
   try {
-    const [results] = await promisePool.query(
+    // 获取连接
+    connection = await pool.getConnection();
+
+    // 切换到目标数据库
+    await connection.query('USE excalidraw_libraries_db');
+
+    const [results] = await connection.query(
       `
         INSERT INTO list (id, name, description, authors, source, preview, created, updated, version, item_names)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -24,6 +30,10 @@ async function insertListData(listData) {
     console.log(`Inserted list data with ID ${results.insertId}`);
   } catch (error) {
     console.error('Error inserting list data:', error);
+  } finally {
+    if (connection) {
+      connection.release(); // 释放连接回连接池
+    }
   }
 }
 

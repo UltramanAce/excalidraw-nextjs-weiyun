@@ -1,9 +1,15 @@
-// insertLibraryData.js
-const { promisePool } = require('./lib/db');
+import { pool } from '../app/lib/db.mjs';
 
 async function insertLibraryData(libraryData) {
+  let connection;
   try {
-    const [results] = await promisePool.query(
+    // 获取连接
+    connection = await pool.getConnection();
+
+    // 切换到目标数据库
+    await connection.query('USE excalidraw_libraries_db');
+
+    const [results] = await connection.query(
       `
         INSERT INTO libraries (type, version, source, library_items)
         VALUES (?, ?, ?, ?)
@@ -18,6 +24,10 @@ async function insertLibraryData(libraryData) {
     console.log(`Inserted library data with ID ${results.insertId}`);
   } catch (error) {
     console.error('Error inserting library data:', error);
+  } finally {
+    if (connection) {
+      connection.release(); // 释放连接回连接池
+    }
   }
 }
 
@@ -196,3 +206,6 @@ const libraryData2 = {
   await insertLibraryData(libraryData1);
   await insertLibraryData(libraryData2);
 })();
+
+
+

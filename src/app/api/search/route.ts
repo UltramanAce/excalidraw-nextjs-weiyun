@@ -1,5 +1,5 @@
 // src/app/api/search/route.ts
-import { promisePool } from '../../lib/db';
+import { pool } from '../../lib/db.mjs';
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     // 构建 SQL 查询语句，注意防止 SQL 注入
-    const [data] = await promisePool.query(
+    const [data] = await pool.query(
       `
         SELECT * FROM list
         WHERE LOWER(name) LIKE LOWER(?)
